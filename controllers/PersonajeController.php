@@ -12,19 +12,35 @@ class PersonajeController {
     }
 
     public function crear() {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $id = $_POST['id'];
-            $nombre = $_POST['nombre'];
-            $nivel = $_POST['nivel'];
-            $clase = $_POST['clase']; // esto es para la creacion de futuras clases
-            $personaje = new Mago($id,$nombre,$nivel,$clase);
-            $this->gestor->crear($personaje);  
-            header("Location: index.php");
-            exit;
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $id = $_POST['id'];
+        $nombre = $_POST['nombre'];
+        $nivel = $_POST['nivel'];
+        $clase = $_POST['clase'] ?? 'mago';
+        
+        // Crear el personaje según la clase
+        switch (strtolower($clase)) {
+            case 'mago':
+                $personaje = new Mago($id, $nombre, $nivel, $clase);
+                break;
+            case 'guerrero':
+                $personaje = new Guerrero($id, $nombre, $nivel, $clase);
+                break;
+            case 'clerigo':
+                $personaje = new Clerigo($id, $nombre, $nivel, $clase);
+                break;
+            default:
+                $personaje = new Mago($id, $nombre, $nivel, $clase); // Por defecto Mago
+                break;
         }
-        $personaje = null;
-        include "views/crear.php";
+        
+        $this->gestor->crear($personaje);  
+        header("Location: index.php");
+        exit;
     }
+    $personaje = null;
+    include "views/crear.php";
+}
     public function editar(){
         $id = $_GET['id'] ?? null;
         if (!$id) {
