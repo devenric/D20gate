@@ -137,6 +137,7 @@
 
         input[type="text"],
         input[type="number"],
+        input[type="file"],
         select {
             width: 100%;
             padding: 0.75rem 1rem;
@@ -154,6 +155,31 @@
             outline: none;
             border-color: var(--secondary);
             box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2);
+        }
+
+        input[type="file"] {
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        input[type="file"]::file-selector-button {
+            background: linear-gradient(180deg, var(--secondary-dark) 0%, var(--accent) 100%);
+            color: var(--text-light);
+            border: 2px solid var(--border-gold);
+            border-radius: 4px;
+            padding: 0.4rem 0.8rem;
+            margin-right: 0.5rem;
+            cursor: pointer;
+            font-family: 'Cinzel', serif;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: var(--transition);
+        }
+
+        input[type="file"]::file-selector-button:hover {
+            background: linear-gradient(180deg, var(--secondary) 0%, var(--secondary-dark) 100%);
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
         }
 
         input::placeholder {
@@ -275,19 +301,48 @@
             font-size: 0.95rem;
         }
 
+        .item-actions {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: center;
+            margin-top: 1.5rem;
+        }
+
+        .edit-btn,
         .delete-btn {
             display: inline-block;
-            margin-top: 1rem;
             padding: 0.6rem 1.5rem;
-            background: linear-gradient(180deg, var(--danger) 0%, var(--primary-dark) 100%);
-            color: var(--text-light);
             text-decoration: none;
             border-radius: 6px;
-            border: 2px solid #a00000;
+            border: 2px solid;
             font-weight: 600;
             letter-spacing: 0.05em;
             transition: var(--transition);
             font-size: 0.9rem;
+            flex: 1;
+        }
+
+        .edit-btn {
+            background: linear-gradient(180deg, var(--success) 0%, #3a5c47 100%);
+            color: var(--text-light);
+            border-color: #5a8c69;
+        }
+
+        .edit-btn::before {
+            content: '✏️';
+            margin-right: 0.5rem;
+        }
+
+        .edit-btn:hover {
+            background: linear-gradient(180deg, #5a8c69 0%, var(--success) 100%);
+            box-shadow: 0 0 15px rgba(74, 124, 89, 0.4);
+            transform: scale(1.05);
+        }
+
+        .delete-btn {
+            background: linear-gradient(180deg, var(--danger) 0%, var(--primary-dark) 100%);
+            color: var(--text-light);
+            border-color: #a00000;
         }
 
         .delete-btn::before {
@@ -390,7 +445,7 @@
 
         <div class="form-container">
             <h2>📜 Inscribir Nuevo Aventurero</h2>
-            <form method="POST" action="index.php?accion=crear">
+            <form method="POST" action="index.php?accion=crear" enctype="multipart/form-data">
                 <input type="text" name="id" placeholder="ID del Aventurero" required>
                 <input type="text" name="nombre" placeholder="Nombre del Héroe" required>
                 <input type="number" name="nivel" placeholder="Nivel (1-20)" min="1" max="20" required>
@@ -402,6 +457,7 @@
                     <option value="Picaro">🗡️ Pícaro</option>
                     <option value="Barbaro">🪓 Bárbaro</option>
                 </select>
+                <input type="file" name="foto" accept="image/jpeg,image/jpg,image/png,image/gif,image/webp" title="Foto del personaje (opcional)">
                 <button type="submit">INSCRIBIR</button>
             </form>
         </div>
@@ -415,18 +471,31 @@
             <div class="grid-aventureros">
                 <?php foreach ($personajes as $m): ?>
                     <div class="card">
-                        <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=<?= urlencode($m->getNombre()) ?>" 
-                             alt="Avatar de <?= htmlspecialchars($m->getNombre()) ?>">
+                        <?php 
+                        // Mostrar foto personalizada o avatar generado
+                        $fotoUrl = (method_exists($m, 'getFoto') && $m->getFoto()) 
+                            ? 'uploads/personajes/' . htmlspecialchars($m->getFoto())
+                            : 'https://api.dicebear.com/7.x/adventurer/svg?seed=' . urlencode($m->getNombre());
+                        ?>
+                        <img src="<?= $fotoUrl ?>" 
+                             alt="Avatar de <?= htmlspecialchars($m->getNombre()) ?>"
+                             onerror="this.src='https://api.dicebear.com/7.x/adventurer/svg?seed=<?= urlencode($m->getNombre()) ?>'">
                         <h2><?= htmlspecialchars($m->getNombre()) ?></h2>
                         <span class="nivel-badge">⚔ Nivel <?= htmlspecialchars($m->getNivel()) ?></span>
                         <div class="hechizo-box">
                             ✨ <?= htmlspecialchars($m->getHechizo()) ?>
                         </div>
-                        <a href="index.php?accion=eliminar&id=<?= urlencode($m->getId()) ?>" 
-                           class="delete-btn"
-                           onclick="return confirm('¿Estás seguro de expulsar a <?= htmlspecialchars($m->getNombre()) ?> del gremio?')">
-                            ELIMINAR
-                        </a>
+                        <div class="item-actions">
+                            <a href="index.php?accion=editar&id=<?= urlencode($m->getId()) ?>" 
+                               class="edit-btn">
+                                EDITAR
+                            </a>
+                            <a href="index.php?accion=eliminar&id=<?= urlencode($m->getId()) ?>" 
+                               class="delete-btn"
+                               onclick="return confirm('¿Estás seguro de expulsar a <?= htmlspecialchars($m->getNombre()) ?> del gremio?')">
+                                ELIMINAR
+                            </a>
+                        </div>
                     </div>
                 <?php endforeach; ?>
             </div>

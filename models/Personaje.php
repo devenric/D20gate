@@ -3,6 +3,7 @@ abstract class Personaje{
     protected $id;
     protected $nombre;
     protected $nivel;
+    private $foto;
 
     public function __construct($id, $nombre, $nivel) {
         $this->id = $id;
@@ -15,6 +16,8 @@ abstract class Personaje{
     public function setNombre($nombre){$this->nombre = $nombre;}
     public function setNivel($nivel){$this->nivel = $nivel;}
     public function setClase($clase){$this->clase = $clase;}
+    public function getFoto() {return $this->foto;}
+public function setFoto($foto) {$this->foto = $foto;}
 }
 /*  protected $Fuerza;
     protected $Destreza;
