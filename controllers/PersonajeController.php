@@ -16,22 +16,44 @@ class PersonajeController {
         $id = $_POST['id'];
         $nombre = $_POST['nombre'];
         $nivel = $_POST['nivel'];
-        $clase = $_POST['clase'] ?? 'mago';
+        $clase = $_POST['clase'] ?? 'Mago';
+        $hechizo = $_POST['hechizo'] ?? null;
+        if (!$hechizo) {
+            echo "¡Selecciona un hechizo antes!";
+            exit;
+        }
+        // CÓDIGO NUEVO: Manejar la foto
+        $fotoNombre = null;
+        if (isset($_FILES['foto']) && $_FILES['foto']['error'] === UPLOAD_ERR_OK) {
+            $foto = $_FILES['foto'];
+            
+            // Validar tipo
+            $tiposPermitidos = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            if (in_array($foto['type'], $tiposPermitidos)) {
+                // Validar tamaño (5MB máximo)
+                if ($foto['size'] <= 5 * 1024 * 1024) {
+                    // Crear carpeta
+                    $directorioSubida = 'uploads/personajes/';
+                    if (!is_dir($directorioSubida)) {
+                        mkdir($directorioSubida, 0755, true);
+                    }
+                    
+                    // Nombre único
+                    $extension = pathinfo($foto['name'], PATHINFO_EXTENSION);
+                    $fotoNombre = uniqid('personaje_') . '.' . $extension;
+                    $rutaDestino = $directorioSubida . $fotoNombre;
+                    
+                    // Mover archivo
+                    move_uploaded_file($foto['tmp_name'], $rutaDestino);
+                }
+            }
+        }
         
-        // Crear el personaje según la clase
-        switch (strtolower($clase)) {
-            case 'mago':
-                $personaje = new Mago($id, $nombre, $nivel, $clase);
-                break;
-            case 'guerrero':
-                $personaje = new Guerrero($id, $nombre, $nivel, $clase);
-                break;
-            case 'clerigo':
-                $personaje = new Clerigo($id, $nombre, $nivel, $clase);
-                break;
-            default:
-                $personaje = new Mago($id, $nombre, $nivel, $clase); // Por defecto Mago
-                break;
+        $personaje = new Mago($id, $nombre, $nivel, $clase, $hechizo);
+        
+        // IMPORTANTE: Guardar la foto en el personaje
+        if ($fotoNombre) {
+            $personaje->setFoto($fotoNombre);
         }
         
         $this->gestor->crear($personaje);  

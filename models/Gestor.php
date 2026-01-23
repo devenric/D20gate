@@ -7,10 +7,23 @@ class Gestor{
     }
     //Ahora quedaría solamente los métodos CRUD
     public function listar(){
-        return $_SESSION['personajes'];
+           // Validar que todos los elementos son objetos
+        $personajes = $_SESSION['personajes'];
+        foreach ($personajes as $key => $p) {
+            if (!is_object($p)) {
+                unset($personajes[$key]); // Eliminar arrays si existen
+            }
+        }
+        return array_values($personajes); // Reindexar el array
     }
-    public function crear(Personaje $personaje){
-        $_SESSION['personajes'][] = $personaje;
+   public function crear(Personaje $personaje){
+        if (session_status() === PHP_SESSION_NONE) {
+    session_start();}
+        if (!isset($_SESSION['personajes'])) {
+            $_SESSION['personajes'] = [];
+        }
+        $_SESSION['personajes'][$personaje->getId()] = $personaje;
+        session_write_close();
     }
     public function buscar($id){
         foreach ($_SESSION['personajes'] as $p) {
