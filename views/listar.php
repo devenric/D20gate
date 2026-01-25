@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>D20gate - Registro de Aventureros</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="./public/css/listar.css">
-    <script src="./public/js/script.js"></script>
+    <link rel="stylesheet" href="public/css/listar.css">
+    <script src="public/js/script.js"></script>
 </head>
 <body>
     <div class="container">
@@ -35,7 +35,6 @@
             </form>
         </div>
 
-        <!-- Modal de selección de hechizos -->
         <div class="spell-modal" id="spellModal">
             <div class="spell-container">
                 <h2>✨ ELIGE TU HECHIZO ✨</h2>
@@ -78,27 +77,33 @@
                 <?php foreach ($personajes as $m): ?>
                     <div class="card">
                         <?php 
-                        // Mostrar foto personalizada o avatar generado
                         $fotoUrl = (method_exists($m, 'getFoto') && $m->getFoto()) 
-                            ? 'uploads/personajes/' . htmlspecialchars($m->getFoto())
-                            : 'https://api.dicebear.com/7.x/adventurer/svg?seed=' . urlencode($m->getNombre());
+    ? 'uploads/personajes/' . htmlspecialchars($m->getFoto()) . '?t=' . time()
+    : 'https://api.dicebear.com/7.x/adventurer/svg?seed=' . urlencode($m->getNombre());
                         ?>
                         <img src="<?= $fotoUrl ?>" 
                              alt="Avatar de <?= htmlspecialchars($m->getNombre()) ?>"
-                                onerror="this.src='https://api.dicebear.com/7.x/adventurer/svg?seed='<?= urlencode($m->getNombre()) ?>'">
-                        <h2><?= htmlspecialchars($m->getNombre()) ?></h2>
-                        <span class="nivel-badge">⚔ Nivel <?= htmlspecialchars($m->getNivel()) ?></span>
-                        <div class="hechizo-box">
-                            ✨ <?= htmlspecialchars($m->getHechizo()) ?>
+                             onerror="this.src='https://api.dicebear.com/7.x/adventurer/svg?seed=<?= urlencode($m->getNombre()) ?>'">
+                        
+                        <div class="card-info">
+                            <h2><?= htmlspecialchars($m->getNombre()) ?></h2>
+                            
+                            <p class="clase-badge"><?= htmlspecialchars($m->getClase()) ?></p>
+                            
+                            <span class="nivel-badge">⚔ Nivel <?= htmlspecialchars($m->getNivel()) ?></span>
+                            
+                            <?php if (method_exists($m, 'getHechizo') && $m->getHechizo()): ?>
+                                <div class="hechizo-box">
+                                    ✨ <?= htmlspecialchars($m->getHechizo()) ?>
+                                </div>
+                            <?php endif; ?>
                         </div>
+
                         <div class="item-actions">
-                            <a href="index.php?accion=editar&id=<?= urlencode($m->getId()) ?>" 
-                               class="edit-btn">
-                                EDITAR
-                            </a>
+                            <a href="index.php?accion=editar&id=<?= urlencode($m->getId()) ?>" class="edit-btn">EDITAR</a>
                             <a href="index.php?accion=eliminar&id=<?= urlencode($m->getId()) ?>" 
                                class="delete-btn"
-                               onclick="return confirm('¿Estás seguro de expulsar a <?= htmlspecialchars($m->getNombre()) ?> del gremio?')">
+                               onclick="return confirm('¿Estás seguro?')">
                                 ELIMINAR
                             </a>
                         </div>
@@ -106,6 +111,6 @@
                 <?php endforeach; ?>
             </div>
         <?php endif; ?>
-    </div>
+    </div> 
 </body>
 </html>

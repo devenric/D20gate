@@ -441,7 +441,16 @@ textarea {
     box-shadow: var(--shadow-glow);
     animation: modalFadeIn 0.5s ease-out;
 }
-
+.spell-modal {
+    display: none; /* Esto hace que no exista visualmente al cargar */
+    position: fixed;
+    z-index: 999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.8); /* Fondo oscuro tras la ruleta */
+}
 /* Galería de fotos */
 .photo-gallery {
     display: grid;
