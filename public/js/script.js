@@ -1,5 +1,6 @@
 /**
  * D20GATE - Script de Gestión de Aventureros
+ * Versión Corregida: "Foto y Ruleta Fixed"
  */
 
 const allSpells = [
@@ -25,31 +26,36 @@ let selectedIndex = -1;
 
 // --- GESTIÓN DEL MODAL DE HECHIZOS ---
 
-function showSpellSelection() {
-    const form = document.getElementById('editForm') || document.getElementById('createForm');
-    
-    if (!form) {
-        console.error("No se encontró el formulario");
+/**
+ * Muestra la ruleta de hechizos.
+ * El botón 'INSCRIBIR' debe ser type="button" para que esta función lo controle.
+ */
+function showSpellSelection(formId = null) {
+    // Si no le pasamos ID, intentamos buscar el de crear o el de editar
+    const form = formId ? document.getElementById(formId) : (document.getElementById('createForm') || document.getElementById('editForm'));
+    const modal = document.getElementById('spellModal');
+
+    if (!form || !modal) {
+        console.error("No se encuentra el formulario (" + formId + ") o el modal en el HTML");
+        alert("Error místico: No se halló el pergamino de inscripción.");
         return;
     }
+
+    // Guardamos el ID del formulario actual en una variable global para el confirmSpell
+    window.currentFormTarget = form.id;
 
     if (!form.checkValidity()) {
         form.reportValidity();
         return;
     }
 
-    // Mezclar y elegir 3
+    modal.classList.add('active');
+    modal.style.display = 'flex';
+    
+    // Iniciar ruleta...
     const shuffled = [...allSpells].sort(() => Math.random() - 0.5);
     selectedSpells = shuffled.slice(0, 3);
-    
-    const modal = document.getElementById('spellModal');
-    if (modal) {
-        modal.classList.add('active');
-        document.body.style.overflow = 'hidden'; // Bloquea scroll fondo
-        selectedSpells.forEach((spell, index) => {
-            spinSlot(index, spell);
-        });
-    }
+    selectedSpells.forEach((spell, index) => spinSlot(index, spell));
 }
 
 function spinSlot(index, finalSpell) {
@@ -58,6 +64,8 @@ function spinSlot(index, finalSpell) {
     const descId = `desc${index + 1}`;
     const slot = document.getElementById(slotId);
     
+    if(!slot) return;
+
     slot.classList.add('spinning');
     
     let iterations = 0;
@@ -73,6 +81,7 @@ function spinSlot(index, finalSpell) {
         
         if (iterations >= maxIterations) {
             clearInterval(interval);
+            // Fijar el hechizo real obtenido
             document.getElementById(nameId).textContent = finalSpell.name;
             document.getElementById(descId).textContent = finalSpell.desc;
             slot.querySelector('.spell-icon').textContent = finalSpell.icon;
@@ -82,83 +91,87 @@ function spinSlot(index, finalSpell) {
 }
 
 function selectSpell(index) {
-    for (let i = 0; i < 3; i++) {
-        document.getElementById(`slot${i + 1}`).classList.remove('selected');
+    // Limpiar clases de selección en los otros slots
+    for (let i = 1; i <= 3; i++) {
+        const s = document.getElementById(`slot${i}`);
+        if(s) s.classList.remove('selected');
     }
-    document.getElementById(`slot${index + 1}`).classList.add('selected');
+    
+    // Marcar el actual
+    const currentSlot = document.getElementById(`slot${index + 1}`);
+    if(currentSlot) currentSlot.classList.add('selected');
+    
     selectedIndex = index;
-    document.getElementById('confirmBtn').disabled = false;
+    
+    // Habilitar botón de confirmación
+    const confirmBtn = document.getElementById('confirmBtn');
+    if (confirmBtn) confirmBtn.disabled = false;
 }
 
 function confirmSpell() {
-    if (selectedIndex === -1) return;
-    
-    const selectedSpell = selectedSpells[selectedIndex];
-    document.getElementById('selectedSpell').value = selectedSpell.name;
-    
-    // Cerrar y restaurar scroll
-    document.getElementById('spellModal').classList.remove('active');
-    document.body.style.overflow = 'auto';
-    
-    submitForm(); // Envía después de elegir
+    if (selectedIndex !== -1) {
+        const spellName = selectedSpells[selectedIndex].name;
+        
+        // 1. Guardar en el input hidden
+        const hiddenInput = document.getElementById('selectedSpell');
+        if (hiddenInput) {
+            hiddenInput.value = spellName;
+        }
+
+        // 2. Actualizar el texto que ve el usuario
+        const display = document.getElementById('currentSpellDisplay');
+        if (display) {
+            display.textContent = spellName;
+        }
+
+        // 3. CERRAR EL MODAL (Esto es lo que te falta)
+        const modal = document.getElementById('spellModal');
+        if (modal) {
+            modal.classList.remove('active');
+            modal.style.display = 'none'; // Aseguramos el cierre visual
+            document.body.style.overflow = 'auto'; // Devolvemos el scroll a la página
+        }
+
+        // 4. Lógica de salida
+        const editForm = document.getElementById('editForm');
+        const createForm = document.getElementById('createForm');
+
+        if (createForm) {
+            // En la lista: enviar ahora mismo
+            createForm.submit();
+        } else if (editForm) {
+            // En edición: solo avisamos, el usuario debe dar a "GUARDAR CAMBIOS"
+            console.log("Hechizo listo. Ahora pulsa el botón verde para terminar.");
+            // Opcional: puedes hacer que se envíe solo si quieres
+            // editForm.submit(); 
+        }
+    }
 }
 
-// --- GESTIÓN DE FOTOS Y GALERÍA ---
+// --- GESTIÓN DE FOTOS Y GALERÍA (EDICIÓN) ---
 
 function selectPreviousPhoto(event, photoName) {
-    // 1. Guardar en el hidden
     const prevInput = document.getElementById('previousPhoto');
     if (prevInput) prevInput.value = photoName;
     
-    // 2. Limpiar input file
+    // Limpiar input de archivo local para que no haya conflicto
     const fileInput = document.getElementById('foto');
     if (fileInput) fileInput.value = "";
     
-    // 3. Estética de la galería
+    // Feedback visual
     const options = document.querySelectorAll('.photo-option');
-    options.forEach(opt => {
-        opt.style.border = "2px solid #3d3428";
-        opt.style.boxShadow = "none";
-        opt.classList.remove('selected');
-    });
+    options.forEach(opt => opt.classList.remove('selected'));
     
-    const selectedElement = event.currentTarget;
-    selectedElement.style.border = "3px solid #d4af37";
-    selectedElement.style.boxShadow = "0 0 15px rgba(212, 175, 55, 0.6)";
-    selectedElement.classList.add('selected');
+    event.currentTarget.classList.add('selected');
 
-    // 4. Actualizar Preview Avatar
-    const avatarImg = document.querySelector('.preview-avatar img');
-    if (avatarImg) {
-        avatarImg.src = 'uploads/personajes/' + photoName;
+    // Actualizar preview en tiempo real si existe la imagen
+    const previewImg = document.querySelector('.character-preview img');
+    if (previewImg) {
+        previewImg.src = 'uploads/personajes/' + photoName;
     }
 }
 
-function clearPhotoSelection() {
-    document.getElementById('previousPhoto').value = "";
-    const options = document.querySelectorAll('.photo-option');
-    options.forEach(opt => {
-        opt.style.border = "2px solid #3d3428";
-        opt.style.boxShadow = "none";
-        opt.classList.remove('selected');
-    });
-}
-
-// --- ENVÍO FINAL ---
-
-function submitForm() {
-    const form = document.getElementById('editForm') || document.getElementById('createForm');
-    
-    if (!form) return;
-
-    if (form.checkValidity()) {
-        form.submit();
-    } else {
-        form.reportValidity();
-    }
-}
-
-// Cerrar modal con la tecla ESC
+// --- Cierre de seguridad con tecla ESC ---
 document.addEventListener('keydown', (e) => {
     if (e.key === "Escape") {
         const modal = document.getElementById('spellModal');

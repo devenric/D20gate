@@ -587,8 +587,16 @@ textarea {
 }
 
 @media (max-width: 480px) {
-    .container { padding: 0.5rem; }
-    .card, .form-container { padding: 1rem; }
+    .grid-aventureros {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        padding: 1rem;
+    }
+    
+    .card img {
+        width: 100px;
+        height: 100px;
+    }
 }
 
 /* Print */
@@ -598,4 +606,53 @@ textarea {
     .card::before { display: none; }
     
     .btn, button, .item-actions { display: none; }
+}
+.grid-aventureros {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2.5rem;
+    padding: 2rem 0;
+    width: 100%;
+}
+/* Botones de acción en las cards */
+.item-actions a {
+    flex: 1;
+    padding: 0.8rem;
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    border: 1px solid var(--secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+/* Estilo Editar (Verde Esmeralda) */
+.edit-btn {
+    background: linear-gradient(180deg, #2e7d32 0%, #1b5e20 100%);
+    color: #fff !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.edit-btn:hover {
+    background: linear-gradient(180deg, #388e3c 0%, #2e7d32 100%);
+    filter: brightness(1.2);
+    transform: scale(1.05);
+}
+
+/* Estilo Eliminar (Rojo Rubí) */
+.delete-btn {
+    background: linear-gradient(180deg, #c62828 0%, #8e0000 100%);
+    color: #fff !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.delete-btn:hover {
+    background: linear-gradient(180deg, #d32f2f 0%, #c62828 100%);
+    filter: brightness(1.2);
+    transform: scale(1.05);
 }
