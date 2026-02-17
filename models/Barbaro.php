@@ -1,5 +1,5 @@
 <?php
-class Picaro extends Personaje {
+class Barbaro extends Personaje {
     private $hechizo;
 
     public function __construct($id, $nombre, $nivel, $clase,$hechizo) {

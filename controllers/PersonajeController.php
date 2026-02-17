@@ -56,7 +56,7 @@ public function crear() {
         if ($clase === "Mago") {
             $personaje = new Mago($id, $nombre, $nivel, $clase, $hechizo);
         } else if ($clase === "Guerrero") {
-            $personaje = new Guerrero($id, $nombre, $nivel);
+            $personaje = new Guerrero($id, $nombre, $nivel, $clase, $hechizo);
         } else if ($clase === "Barbaro") {
             $personaje = new Barbaro($id, $nombre, $nivel);
         } else {
